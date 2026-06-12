@@ -1,5 +1,6 @@
-from app import suma
+from app import app
 
-def test_suma_correcta():
-    assert suma(2, 3) == 5
-    assert suma(-1, 1) == 0
+def test_home():
+    response = app.test_client().get('/')
+    assert response.status_code == 200
+    assert b"status" in response.data

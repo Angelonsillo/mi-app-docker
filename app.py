@@ -1,5 +1,16 @@
-def suma(a, b):
-    return a + b
+from flask import Flask, jsonify
+import socket
 
-if __name__ == "__main__":
-    print(f"Resultado de la ejecución del código (2 + 3): {suma(2, 3)}")
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    hostname = socket.gethostname()
+    return jsonify({
+        "mensaje": "El servidor de red esta operativo",
+        "host": hostname,
+        "status": "online"
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
