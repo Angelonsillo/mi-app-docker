@@ -7,7 +7,7 @@ app = Flask(__name__)
 def home():
     hostname = socket.gethostname()
     return jsonify({
-        "mensaje": "El servidor de red esta operativo",
+        "mensaje": "El servidor sirve profesor",
         "host": hostname,
         "status": "online"
     })
