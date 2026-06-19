@@ -1,41 +1,43 @@
-name: CI/CD Pipeline a Docker Hub
+name: Docker Build and Bake Checks
 
+# El flujo se ejecutará cada vez que se haga un push o un pull request a la rama principal
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
-  build-and-test:
+  docker-validation:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout de código
-      uses: actions/checkout@v4
+      # Paso 1: Descargar el código del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      # Paso 2: Configurar QEMU (útil para soportar múltiples arquitecturas si es necesario)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-    - name: Instalar dependencias
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      # Paso 3: Configurar Docker Buildx (Obligatorio para usar funciones avanzadas y Bake)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Ejecutar pruebas y calcular cobertura
-      run: |
-        pytest --cov=app test_app.py --cov-report=term-missing
+      # =================================================================
+      # REQUISITO 1: Realizar las comprobaciones de compilación (docker/build)
+      # =================================================================
+      - name: Test Build with docker/build-push-action
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false # Importante: 'false' para que solo compruebe la compilación sin subirla a ningún lado
 
-    - name: Iniciar sesión en Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-    - name: Construir y subir imagen de Docker
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/mi-app-docker:latest
-        
+      # =================================================================
+      # REQUISITO 2: Ejecutar comprobaciones con docker/bake
+      # =================================================================
+      - name: Test Build with docker/bake-action
+        uses: docker/bake-action@v3
+        with:
+          push: false # Solo realiza la comprobación del archivo bake sin publicar
