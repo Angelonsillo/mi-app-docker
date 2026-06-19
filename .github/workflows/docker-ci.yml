@@ -38,6 +38,6 @@ jobs:
       # REQUISITO 2: Ejecutar comprobaciones con docker/bake
       # =================================================================
       - name: Test Build with docker/bake-action
-        uses: docker/bake-action@v3
+        uses: docker/bake-action@v6 # <-- LISTO: Actualizado de @v3 a @v6 para corregir la compatibilidad
         with:
           push: false # Solo realiza la comprobación del archivo bake sin publicar
